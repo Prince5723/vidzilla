@@ -1,0 +1,25 @@
+{
+  "name": "videozilla",
+  "version": "1.0.0",
+  "description": "it is some sort of backend like youtube",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "node",
+    "express",
+    "backend",
+    "mongodb"
+  ],
+  "author": "bikash gupta",
+  "license": "ISC",
+  "dependencies": {
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "mongoose": "^8.12.1"
+  }
+}
