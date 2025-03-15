@@ -8,11 +8,10 @@ dotenv.config({ path: "./.env" });
 
 connectdb()
 .then(()=>{
-  listen(3000, () => {
+  app.listen(3000, () => {
     console.log("Your application is running on port 3000");
   })
 })
 .catch((err) =>{
   `mongodb connection failed !!!!`
 })
-
