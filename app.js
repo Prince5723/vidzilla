@@ -12,6 +12,8 @@ app.use(express.json({ limit: "20kb" }));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
+
+//route
 app.use("/user", userroute);
 
 export { app }; 

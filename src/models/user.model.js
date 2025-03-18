@@ -77,7 +77,6 @@ userschema.methods.accesstoken = function () {
   );
 };
 
-// Generate Refresh Token (Fixed naming issue)
 userschema.methods.generateRefreshToken = function () {
   return jwt.sign(
     {
