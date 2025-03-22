@@ -1,70 +1,92 @@
-import { user } from "../models/user.model.js"; 
-import { uploadToCloudinary } from "../../index.js";
+import { user } from "../models/user.model.js"
+import { uploadtocloudinay } from "../utils/cloudinary.js"
 
-const registerUser = async (req, res) => {
-  console.log(`hi bikash`);
+const registerUser = async(req ,res)=>{
+
   try {
-    // Extract user details from the request body
-    const { username, password, email, fullname } = req.body;
+  
+    //taking user details
+  const{ username , email , fullname , password } = req.body
 
-    // Validate required fields
-    if (!username || !fullname || !password || !email) {
-      return res.status(400).json({ msg: "Please provide all required details" });
-    }
+    //input validation
+  if(!username || !email || !fullname || !password){
+    return res.status(400).json({
+      msg : " not fullfilled user details, eneter full details"
+    })
+  }
 
-    // Check if the user already exists
-    const existingUser = await user.findOne({ $or: [{ email }, { username }] });
-    if (existingUser) {
-      return res.status(409).json({ msg: "User already exists" });
-    }
+  //find user in db
+  const finduser = await user.findOne({
+    $or : [{email},{username}]
+  })
 
-    // Extract file paths from request
-    const avatarLocalPath = req.files?.avatar?.[0]?.path;
-    const coverImgLocalPath = req.files?.coverimg?.[0]?.path;
 
-    if (!avatarLocalPath || !coverImgLocalPath) {
-      return res.status(400).json({ msg: "Missing avatar or cover image" });
-    }
+  //if user found
+  if(finduser)
+  {
+    return res.status(409).json({
+      msg : " user already exist please login"
+    })
+  }
 
-    // Upload files to Cloudinary
-    const avatar = await uploadToCloudinary(avatarLocalPath);
-    const coverimg = await uploadToCloudinary(coverImgLocalPath);
-    
-    console.log('After upload');
-    console.log("avatar", avatar);
-    console.log("coverimg", coverimg);
+  //if user not found then take img and avatar
 
-    // Ensure images are uploaded successfully
-    if (!avatar || !coverimg) {
-      return res.status(500).json({ msg: "Unable to upload avatar and cover image" });
-    }
+  const getavatar = req.files?.avatar?.[0]?.path;  
+  const getcoverimg = req.files?.coverimg?.[0]?.path;
 
-    // Create and save the new user
-    const newUser = new user({
+  // console.log(avatar)
+  // console.log(coverimg)
+
+  // if avatar and coverimg missing
+  if(!getavatar || !getcoverimg)
+  {
+    return res.status(400).json({
+      msg : " missing avatar or coverimg"
+    })
+  }
+
+  const avatar = await uploadtocloudinay(getavatar);
+  const coverimg = await uploadtocloudinay(getcoverimg);
+  
+  if (!avatar || !coverimg) {
+    return res.status(500).json({
+      msg: "Unable to upload coverimg or avatar to Cloudinary",
+    });
+  }
+
+  //create new user
+  const newuser = new user({
+    username,
+    email,
+    fullname,
+    password,
+    avatar,  
+    coverimg, 
+  });
+  
+  await newuser.save();
+
+  return res.status(200).json({
+    msg: "User created successfully",
+    data: {
       username,
-      password, 
       email,
       fullname,
-       avatar,  // Using the string URL directly
-       coverimg,  // Using the string URL directly
-    });
-
-    await newUser.save();
-
-    return res.status(201).json({
-      msg: "User registered successfully",
-      data: {
-        username,
-        email,
-        fullname,
-         avatar,  // No .url needed
-        coverimg,  // No .url needed
-      },
-    });
+      avatar,  
+      coverimg,
+    },
+  });
+  
+  
+ 
   } catch (error) {
-    console.error("Error registering user:", error);
-    return res.status(500).json({ msg: "Server error. Unable to register user." });
+    return res.status(500).json({
+      msg : " server error, unable to create user"
+    }
+    )
   }
-};
+  
 
-export { registerUser };
+}
+
+export { registerUser }
