@@ -1,3 +1,4 @@
+import { configDotenv } from "dotenv"
 import { user } from "../models/user.model.js"
 import { uploadtocloudinay } from "../utils/cloudinary.js"
 
@@ -77,7 +78,9 @@ const registerUser = async(req ,res)=>{
     },
   });
   
-  
+
+  /// ALL DONE WITH REGISTER USER , NOW TIME FOR LOGIN
+
  
   } catch (error) {
     return res.status(500).json({
@@ -89,4 +92,59 @@ const registerUser = async(req ,res)=>{
 
 }
 
-export { registerUser }
+
+
+const userlogin = async (req, res) => {
+  try {
+    //take usenname from user body
+    const { username, password, email } = req.body;
+
+    
+
+    // is info provided
+    if (!username || !email || !password) {
+      return res.status(400).json({
+        msg: "Your data is missing",
+      });
+    }
+
+    // Check if user exists
+    const finduser = await user.findOne({
+      $or: [{ username: username }, { email: email }],
+    });
+
+
+    //if not found
+    if (!finduser) {
+      return res.status(404).json({
+        msg: "User not found. Please register",
+      });
+    }
+
+    // Compare password
+    const ispasswordvalid = await finduser.checkpassword(password);
+
+    if (!ispasswordvalid) {
+      return res.status(401).json({
+        msg: "Incorrect password",
+      });
+    }
+
+    // Return  response
+    return res.status(200).json({
+      msg: "Login successful",
+      user: {
+        username: finduser.username,
+        email: finduser.email,
+      },
+    });
+
+  } catch (error) {
+    console.log(error)
+    return res.status(500).json({
+      msg: "Server error, unable to process request",
+    });
+  }
+};
+
+export { registerUser, userlogin };

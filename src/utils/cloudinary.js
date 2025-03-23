@@ -15,7 +15,8 @@ const uploadtocloudinay = async (localfilepath)=> {
   try {
     if(!localfilepath) return null;
     const response = await cloudinary.uploader.upload(localfilepath);
-    console.log(`upload successfull The link is: ${response.secure_url}`)
+    //console.log(`upload successfull The link is: ${response.secure_url}`)
+    fs.unlinkSync(localfilepath);
     return response.secure_url;
 
     
