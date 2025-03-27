@@ -63,7 +63,7 @@ userschema.methods.checkpassword = async function (password) {
 };
 
 // Generate Access Token
-userschema.methods.accesstoken = function () {
+userschema.methods.generateAccesstoken = function () {
   return jwt.sign(
     {
       _id: this._id,

@@ -93,15 +93,13 @@ const registerUser = async(req ,res)=>{
 }
 
 
-
 const userlogin = async (req, res) => {
   try {
-    //take usenname from user body
+
+    // Take username, password, and email from request body
     const { username, password, email } = req.body;
 
-    
-
-    // is info provided
+    // Check if required info is provided
     if (!username || !email || !password) {
       return res.status(400).json({
         msg: "Your data is missing",
@@ -109,38 +107,60 @@ const userlogin = async (req, res) => {
     }
 
     // Check if user exists
-    const finduser = await user.findOne({
-      $or: [{ username: username }, { email: email }],
+    const findUser = await user.findOne({
+      $or: [{ username }, { email }],
     });
 
-
-    //if not found
-    if (!finduser) {
+    // If user is not found
+    if (!findUser) {
       return res.status(404).json({
         msg: "User not found. Please register",
       });
     }
 
     // Compare password
-    const ispasswordvalid = await finduser.checkpassword(password);
-
-    if (!ispasswordvalid) {
+    const isPasswordValid = await findUser.checkpassword(password);
+    if (!isPasswordValid) {
       return res.status(401).json({
         msg: "Incorrect password",
       });
     }
 
-    // Return  response
-    return res.status(200).json({
-      msg: "Login successful",
-      user: {
-        username: finduser.username,
-        email: finduser.email,
-      },
-    });
+    // Generate access and refresh tokens
+    const refreshToken = findUser.generateRefreshToken();
+    const accessToken = findUser.generateAccesstoken();
+
+    // Save refresh token in the database
+    findUser.refreshtoken = refreshToken;
+    await findUser.save({ validateBeforeSave: false });
+
+    //console.log(findUser)
+
+    //can be altered only through backend
+    const options = {
+      httponly : true,
+      secure : true
+    }
+    // Set cookies and return response
+    return res
+      .status(200)
+      .cookie("accessToken", accessToken, options)
+      .cookie("refreshToken", refreshToken, options)
+      .json({
+        msg: "Login successful",
+        user: {
+          username: findUser.username,
+          email: findUser.email,
+          fullname : findUser.fullname,
+          avatar : findUser.avatar,
+          coverimg : findUser.coverimg,
+          accessToken,
+          refreshToken,
+        },
+      });
 
   } catch (error) {
-    console.log(error)
+    console.error(error);
     return res.status(500).json({
       msg: "Server error, unable to process request",
     });
