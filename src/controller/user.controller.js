@@ -90,7 +90,7 @@ const registerUser = async(req ,res)=>{
   }
   
 
-}
+};
 
 
 const userlogin = async (req, res) => {
@@ -167,4 +167,37 @@ const userlogin = async (req, res) => {
   }
 };
 
-export { registerUser, userlogin };
+
+const logout = async (req, res) => {
+  try {
+    await user.findByIdAndUpdate(
+      req.user._id,
+      {
+        $set: {
+          refreshtoken: undefined,
+        },
+      }
+    );
+
+    const options = {
+      httponly: true,
+      secure: true,
+    };
+
+    return res
+      .status(200)
+      .clearCookie("accessToken", options) 
+      .clearCookie("refreshToken", options) 
+      .json({
+        msg: "User logout",
+      });
+
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      msg: "Unable to logout, please try again",
+    });
+  }
+};
+
+export { registerUser, userlogin , logout };
