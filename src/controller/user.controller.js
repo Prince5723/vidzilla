@@ -1,5 +1,6 @@
 import { configDotenv } from "dotenv"
-import { user } from "../models/user.model.js"
+import { user, user } from "../models/user.model.js"
+import  jwt  from "jsonwebtoken";
 import { uploadtocloudinay } from "../utils/cloudinary.js"
 
 const registerUser = async(req ,res)=>{
@@ -100,7 +101,7 @@ const userlogin = async (req, res) => {
     const { username, password, email } = req.body;
 
     // Check if required info is provided
-    if (!username || !email || !password) {
+    if (!(username || email || password)) {
       return res.status(400).json({
         msg: "Your data is missing",
       });
@@ -199,5 +200,53 @@ const logout = async (req, res) => {
     });
   }
 };
+
+
+
+const refreshaccesstoken = async(req,res)=>{
+
+try {
+    const incomingrefreshtoken = req.cookies.refreshToken || req.body.refreshToken 
+  
+    if(!refreshaccesstoken){
+      return res.status(401).json({
+        msg : "unauhorized access"
+      })
+    }
+    const decodedrefreshtoken = jwt.verify(refreshaccesstoken , process.env.refresh_token_secret)
+  
+    const user = user.findbyid(decodedrefreshtoken?._id)
+  
+    if(!user){
+      return res.status(500).json({
+        msg : "invalid refresh token"
+      })
+    }
+
+    if(incomingrefreshtoken !== user?.refreshToken){
+      return res.status(500).json({
+        msg : "refresh token is expired or verification failed"
+      })
+    }
+
+    //if pass generate new token
+
+    const newrefreshToken = user.generateRefreshToken();
+    const newaccessToken = user.generateAccesstoken();
+
+    //save token to db now and return
+
+
+  
+  
+} catch (error) {
+  console.log(error)
+  return res.status(500).json({
+    msg : "invalid request"
+  })
+  
+}
+
+}
 
 export { registerUser, userlogin , logout };
