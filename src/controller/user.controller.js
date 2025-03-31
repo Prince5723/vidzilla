@@ -267,4 +267,38 @@ const refreshaccesstoken = async (req, res) => {
 };
 
 
-export { registerUser, userlogin , logout , refreshaccesstoken };
+const changePassword = async (req, res) => {
+  try {
+    const { oldpassword, newpassword, confirmpassword } = req.body;
+
+    
+    const userInstance = await user.findById(req.user._id);
+    if (!userInstance) {
+      return res.status(404).json({ msg: "User not found" });
+    }
+
+    
+    if (newpassword !== confirmpassword) {
+      return res.status(400).json({ msg: "New password and confirm password do not match" });
+    }
+
+    
+    const correctPassword = await userInstance.checkpassword(oldpassword);
+    if (!correctPassword) {
+      return res.status(401).json({ msg: "Password verification failed" });
+    }
+
+    
+    userInstance.password = newpassword;
+
+    await userInstance.save({ validateBeforeSave: false });
+
+    return res.status(200).json({ msg: "Password changed successfully" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500)
+    .json({ msg: "Unable to change password" });
+  }
+};
+
+export { registerUser, userlogin , logout , refreshaccesstoken , changePassword};
