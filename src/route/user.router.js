@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { upload } from "../middlewares/multermodel.js";
-import { registerUser , userlogin , logout } from "../controller/user.controller.js"
+import { registerUser , userlogin , logout ,refreshaccesstoken } from "../controller/user.controller.js"
 import { verifyjwt } from "../middlewares/auth.middleware.js";
 
 const userroute = Router();
@@ -21,6 +21,9 @@ userroute.post("/api/v2/userlogin", userlogin);
 //logout user
 userroute.post("/api/v3/logout" ,verifyjwt, logout);
 
+
+//refreshtoken
+userroute.post("/api/v4/refresh-token" , refreshaccesstoken);
 
 
 

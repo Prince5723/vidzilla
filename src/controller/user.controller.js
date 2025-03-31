@@ -1,5 +1,5 @@
 import { configDotenv } from "dotenv"
-import { user, user } from "../models/user.model.js"
+import { user} from "../models/user.model.js"
 import  jwt  from "jsonwebtoken";
 import { uploadtocloudinay } from "../utils/cloudinary.js"
 
@@ -202,51 +202,69 @@ const logout = async (req, res) => {
 };
 
 
+const refreshaccesstoken = async (req, res) => {
+  try {
+    const incomingrefreshtoken = req.cookies.refreshToken || req.body.refreshToken;
 
-const refreshaccesstoken = async(req,res)=>{
-
-try {
-    const incomingrefreshtoken = req.cookies.refreshToken || req.body.refreshToken 
-  
-    if(!refreshaccesstoken){
+    if (!incomingrefreshtoken) {
       return res.status(401).json({
-        msg : "unauhorized access"
-      })
+        msg: "unauthorized access",
+      });
     }
-    const decodedrefreshtoken = jwt.verify(refreshaccesstoken , process.env.refresh_token_secret)
-  
-    const user = user.findbyid(decodedrefreshtoken?._id)
-  
-    if(!user){
+
+    const decodedrefreshtoken = jwt.verify(incomingrefreshtoken, process.env.refresh_token_secret);
+
+    const user = await user.findById(decodedrefreshtoken?._id);
+
+    if (!user) {
       return res.status(500).json({
-        msg : "invalid refresh token"
-      })
+        msg: "invalid refresh token",
+      });
     }
 
-    if(incomingrefreshtoken !== user?.refreshToken){
+    if (incomingrefreshtoken !== user.refreshToken) {
       return res.status(500).json({
-        msg : "refresh token is expired or verification failed"
-      })
+        msg: "refresh token is expired or verification failed",
+      });
     }
 
-    //if pass generate new token
-
+    // Generate new tokens
     const newrefreshToken = user.generateRefreshToken();
     const newaccessToken = user.generateAccesstoken();
 
-    //save token to db now and return
+    // Save new refresh token to DB
+    user.refreshToken = newrefreshToken;
+    await user.save({ validateBeforeSave: false });
+
+    const options = {
+      httpOnly: true,
+      secure: true,
+    };
+
+    return res
+      .status(200)
+      .cookie("refreshToken", newrefreshToken, options)
+      .cookie("accesstoken", newaccessToken, options)
+      .json({
+        msg: "session renewed",
+        user: {
+          username: user.username,
+          email: user.email,
+          fullname: user.fullname,
+          avatar: user.avatar,
+          coverimg: user.coverimg,
+          newaccessToken,
+          newrefreshToken,
+        },
+      });
+
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      msg: "invalid request",
+    });
+  }
+};
 
 
-  
-  
-} catch (error) {
-  console.log(error)
-  return res.status(500).json({
-    msg : "invalid request"
-  })
-  
-}
-
-}
-
-export { registerUser, userlogin , logout };
+export { registerUser, userlogin , logout , refreshaccesstoken };
