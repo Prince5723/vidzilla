@@ -301,4 +301,59 @@ const changePassword = async (req, res) => {
   }
 };
 
-export { registerUser, userlogin , logout , refreshaccesstoken , changePassword};
+
+const getcurrentuser = async (req, res) => {
+  try {
+    return res.status(200).json({
+      data: req.user, 
+      message: "Current user fetched successfully"
+    });
+  } catch (error) {
+    console.error("Error fetching current user:", error);
+    return res.status(500).json({
+      message: "Internal server error"
+    });
+  }
+};
+
+const updatedetails = async (req, res) => {
+  try {
+    const { fullname, email } = req.body;
+
+    if (!fullname || !email) {
+      return res.status(400).json({
+        msg: "Please enter all required details",
+      });
+    }
+
+    const updatedinfo = await user.findByIdAndUpdate(
+      req.user?._id, // Find the user by ID
+      {
+        $set: {
+          fullname,
+          email,
+        },
+      }, // Update query
+      { new: true } // Return the updated document without password
+    ).select("-password");
+
+    if (!updatedinfo) {
+      return res.status(404).json({
+        msg: "User not found",
+      });
+    }
+
+    return res.status(200).json({
+      user: updatedinfo, 
+      msg: "Account details updated successfully",
+    });
+  } catch (error) {
+    console.error("Error updating user details:", error);
+    return res.status(500).json({
+      msg: "Unable to update details",
+    });
+  }
+};
+
+
+export { registerUser, userlogin , logout , refreshaccesstoken , changePassword , getcurrentuser,updatedetails};
