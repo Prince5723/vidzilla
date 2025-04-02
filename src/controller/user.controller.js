@@ -355,5 +355,49 @@ const updatedetails = async (req, res) => {
   }
 };
 
+const updateavatarORcoverimg = async (req, res) => {
+  try {
+    const getcoverimg = req.files?.coverimg?.[0]?.path;
+    const getavatar = req.files?.avatar?.[0]?.path;
 
-export { registerUser, userlogin , logout , refreshaccesstoken , changePassword , getcurrentuser,updatedetails};
+    if (!getavatar && !getcoverimg) {
+      return res.status(400).json({
+        msg: "Missing avatar or cover image",
+      });
+    }
+
+    const avatar =  await uploadtocloudinay(getavatar)
+    const coverimg =  await uploadtocloudinay(getcoverimg) 
+
+    if (!avatar && !coverimg) {
+      return res.status(402).json({
+        msg: "Unable to upload to Cloudinary",
+      });
+    }
+
+    // Find user from database and update
+    const updatedUser = await user.findByIdAndUpdate(
+      req.user?._id,
+      {
+        $set: {
+          avatar,
+          coverimg
+        },
+      },
+      { new: true }
+    ).select("-password");
+
+    return res.status(200).json({
+      data: updatedUser,
+      msg: "Cover image / avatar updated successfully",
+    });
+
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      msg: "Unable to update",
+    });
+  }
+};
+
+export { registerUser, userlogin , logout , refreshaccesstoken , changePassword , getcurrentuser,updatedetails,updateavatarORcoverimg};
