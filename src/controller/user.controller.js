@@ -3,6 +3,9 @@ import { user} from "../models/user.model.js"
 import  jwt  from "jsonwebtoken";
 import { uploadtocloudinay } from "../utils/cloudinary.js"
 
+
+
+
 const registerUser = async(req ,res)=>{
 
   try {
@@ -316,6 +319,7 @@ const getcurrentuser = async (req, res) => {
   }
 };
 
+
 const updatedetails = async (req, res) => {
   try {
     const { fullname, email } = req.body;
@@ -355,6 +359,7 @@ const updatedetails = async (req, res) => {
   }
 };
 
+
 const updateavatarORcoverimg = async (req, res) => {
   try {
     const getcoverimg = req.files?.coverimg?.[0]?.path;
@@ -366,22 +371,22 @@ const updateavatarORcoverimg = async (req, res) => {
       });
     }
 
-    const avatar =  await uploadtocloudinay(getavatar)
-    const coverimg =  await uploadtocloudinay(getcoverimg) 
+    const avatar =  await uploadtocloudinay(getavatar) 
+    const coverimg = await uploadtocloudinay(getcoverimg) 
 
-    if (!avatar && !coverimg) {
+    if ((avatar && !avatar.url) || (coverimg && !coverimg.url)) {
       return res.status(402).json({
         msg: "Unable to upload to Cloudinary",
       });
     }
 
-    // Find user from database and update
+
     const updatedUser = await user.findByIdAndUpdate(
       req.user?._id,
       {
         $set: {
-          avatar,
-          coverimg
+          avatar: avatar.url ,
+          coverimg: coverimg.url 
         },
       },
       { new: true }
