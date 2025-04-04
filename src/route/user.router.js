@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { upload } from "../middlewares/multermodel.js";
-import { registerUser , userlogin , logout ,refreshaccesstoken, changePassword ,getcurrentuser , updatedetails ,updateavatarORcoverimg} from "../controller/user.controller.js"
+import { registerUser , userlogin , logout ,refreshaccesstoken, changePassword ,
+getcurrentuser , updatedetails ,updateavatarORcoverimg} from "../controller/user.controller.js"
 import { verifyjwt } from "../middlewares/auth.middleware.js";
 
 const userroute = Router();

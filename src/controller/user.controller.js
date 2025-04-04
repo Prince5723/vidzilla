@@ -405,4 +405,15 @@ const updateavatarORcoverimg = async (req, res) => {
   }
 };
 
-export { registerUser, userlogin , logout , refreshaccesstoken , changePassword , getcurrentuser,updatedetails,updateavatarORcoverimg};
+
+
+
+export { registerUser, 
+  userlogin , 
+  logout , 
+  refreshaccesstoken,
+  changePassword ,
+  getcurrentuser,
+  updatedetails,
+  updateavatarORcoverimg
+};
