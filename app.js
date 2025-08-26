@@ -3,6 +3,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 
 import { userroute } from "./src/route/user.router.js";
+import { videoroute } from "./src/route/video.router.js";
 
 const app = express();
 
@@ -14,5 +15,6 @@ app.use(express.static("public"));
 
 //route
 app.use("/user", userroute);
+app.use("/video", videoroute);
 
 export { app }; 
